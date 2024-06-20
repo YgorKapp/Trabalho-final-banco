@@ -1,0 +1,98 @@
+
+CREATE TABLE IF NOT EXISTS `CLIENTE` (
+  `CPF` INT(11) NOT NULL,
+  `RG` INT(9),
+  `Nome` VARCHAR(85),
+  `Data_nascimento` DATE,
+  `E-mail` VARCHAR(45),
+  `Cidade_residencia` VARCHAR(100),
+  `UF` VARCHAR(2),
+  PRIMARY KEY (`CPF`));
+
+-- -----------------------------------------------------
+-- Table `PAGAMENTO`
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `PAGAMENTO` (
+  `Id_pagamento` INT NOT NULL,
+  `Metodo` VARCHAR(45),
+  `Parcelas` INT(2),
+  `Valor` INT(10),
+  PRIMARY KEY (`Id_pagamento`));
+
+-- -----------------------------------------------------
+-- Table `RESERVA`
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `RESERVA` (
+  `Codigo_reserva` INT(10) NOT NULL,
+  `Status` VARCHAR(45),
+  `Data_expiracao` DATE,
+  `CLIENTE_CPF` INT(11) NOT NULL,
+  `Id_pagamento` INT NOT NULL,
+  PRIMARY KEY (`Codigo_reserva`),
+  INDEX `fk_RESERVA_CLIENTE_idx` (`CLIENTE_CPF` ASC) VISIBLE,
+  INDEX `fk_RESERVA_PAGAMENTO1_idx` (`Id_pagamento` ASC) VISIBLE,
+  CONSTRAINT `fk_RESERVA_CLIENTE`
+    FOREIGN KEY (`CLIENTE_CPF`)
+    REFERENCES `mydb`.`CLIENTE` (`CPF`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_RESERVA_PAGAMENTO1`
+    FOREIGN KEY (`Id_pagamento`)
+    REFERENCES `mydb`.`PAGAMENTO` (`Id_pagamento`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
+
+-- -----------------------------------------------------
+-- Table `VOO`
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `VOO` (
+  `Id_voo` INT(10) NOT NULL,
+  `Origem` VARCHAR(45),
+  `Destino` VARCHAR(45),
+  PRIMARY KEY (`Id_voo`));
+
+
+-- -----------------------------------------------------
+-- Table `AERONAVE`
+-- -----------------------------------------------------
+
+
+CREATE TABLE IF NOT EXISTS `AERONAVE` (
+  `Id_aeronave` INT(10) NOT NULL,
+  `Modelo` VARCHAR(45),
+  PRIMARY KEY (`Id_aeronave`));
+
+
+-- -----------------------------------------------------
+-- Table `TRECHO`
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `TRECHO` (
+  `Id_trecho` INT NOT NULL,
+  `Classe` VARCHAR(20),
+  `Data_hora` DATETIME,
+  `Codigo_reserva` INT(10) NOT NULL,
+  `VOO_Id_voo` INT(10) NOT NULL,
+  `AERONAVE_Id_aeronave` INT(10) NOT NULL,
+  PRIMARY KEY (`Id_trecho`),
+  INDEX `fk_TRECHO_RESERVA1_idx` (`Codigo_reserva` ASC) VISIBLE,
+  INDEX `fk_TRECHO_VOO1_idx` (`VOO_Id_voo` ASC) VISIBLE,
+  INDEX `fk_TRECHO_AERONAVE1_idx` (`AERONAVE_Id_aeronave` ASC) VISIBLE,
+  CONSTRAINT `fk_TRECHO_RESERVA1`
+    FOREIGN KEY (`Codigo_reserva`)
+    REFERENCES `mydb`.`RESERVA` (`Codigo_reserva`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_TRECHO_VOO1`
+    FOREIGN KEY (`VOO_Id_voo`)
+    REFERENCES `mydb`.`VOO` (`Id_voo`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_TRECHO_AERONAVE1`
+    FOREIGN KEY (`AERONAVE_Id_aeronave`)
+    REFERENCES `mydb`.`AERONAVE` (`Id_aeronave`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);
