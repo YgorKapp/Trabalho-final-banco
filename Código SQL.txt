@@ -1,98 +1,119 @@
+ -- -----------------------------------------------------
+ -- Criando as tabelas
+  -- -----------------------------------------------------
 
-CREATE TABLE IF NOT EXISTS `CLIENTE` (
-  `CPF` INT(11) NOT NULL,
-  `RG` INT(9),
-  `Nome` VARCHAR(85),
-  `Data_nascimento` DATE,
-  `E-mail` VARCHAR(45),
-  `Cidade_residencia` VARCHAR(100),
-  `UF` VARCHAR(2),
-  PRIMARY KEY (`CPF`));
+CREATE TABLE IF NOT EXISTS CLIENTE (
+  CPF VARCHAR(11) NOT NULL,
+  RG VARCHAR(9),
+  Nome VARCHAR(85),
+  Data_nascimento DATE,
+  Email VARCHAR(45),
+  Cidade_residencia VARCHAR(100),
+  UF VARCHAR(2),
+  PRIMARY KEY (CPF));
 
--- -----------------------------------------------------
--- Table `PAGAMENTO`
--- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS PAGAMENTO (
+  Id_pagamento INT NOT NULL,
+  Metodo VARCHAR(45),
+  Parcelas INT,
+  Valor INT,
+  PRIMARY KEY (Id_pagamento));
 
-CREATE TABLE IF NOT EXISTS `PAGAMENTO` (
-  `Id_pagamento` INT NOT NULL,
-  `Metodo` VARCHAR(45),
-  `Parcelas` INT(2),
-  `Valor` INT(10),
-  PRIMARY KEY (`Id_pagamento`));
-
--- -----------------------------------------------------
--- Table `RESERVA`
--- -----------------------------------------------------
-
-CREATE TABLE IF NOT EXISTS `RESERVA` (
-  `Codigo_reserva` INT(10) NOT NULL,
-  `Status` VARCHAR(45),
-  `Data_expiracao` DATE,
-  `CLIENTE_CPF` INT(11) NOT NULL,
-  `Id_pagamento` INT NOT NULL,
-  PRIMARY KEY (`Codigo_reserva`),
-  INDEX `fk_RESERVA_CLIENTE_idx` (`CLIENTE_CPF` ASC) VISIBLE,
-  INDEX `fk_RESERVA_PAGAMENTO1_idx` (`Id_pagamento` ASC) VISIBLE,
-  CONSTRAINT `fk_RESERVA_CLIENTE`
-    FOREIGN KEY (`CLIENTE_CPF`)
-    REFERENCES `mydb`.`CLIENTE` (`CPF`)
+CREATE TABLE IF NOT EXISTS RESERVA (
+  Codigo_reserva INT NOT NULL,
+  Status VARCHAR(45),
+  Data_expiracao DATE,
+  CLIENTE_CPF VARCHAR(11) NOT NULL,
+  Id_pagamento INT NOT NULL,
+  PRIMARY KEY (Codigo_reserva),
+  INDEX fk_RESERVA_CLIENTE_idx (CLIENTE_CPF ASC) VISIBLE,
+  INDEX fk_RESERVA_PAGAMENTO1_idx (Id_pagamento ASC) VISIBLE,
+  CONSTRAINT fk_RESERVA_CLIENTE
+    FOREIGN KEY (CLIENTE_CPF)
+    REFERENCES CLIENTE (CPF)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_RESERVA_PAGAMENTO1`
-    FOREIGN KEY (`Id_pagamento`)
-    REFERENCES `mydb`.`PAGAMENTO` (`Id_pagamento`)
+  CONSTRAINT fk_RESERVA_PAGAMENTO1
+    FOREIGN KEY (Id_pagamento)
+    REFERENCES PAGAMENTO (Id_pagamento)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
 
--- -----------------------------------------------------
--- Table `VOO`
--- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS VOO (
+  Id_voo INT NOT NULL,
+  Origem VARCHAR(45),
+  Destino VARCHAR(45),
+  PRIMARY KEY (Id_voo));
 
-CREATE TABLE IF NOT EXISTS `VOO` (
-  `Id_voo` INT(10) NOT NULL,
-  `Origem` VARCHAR(45),
-  `Destino` VARCHAR(45),
-  PRIMARY KEY (`Id_voo`));
+CREATE TABLE IF NOT EXISTS AERONAVE (
+  Id_aeronave INT NOT NULL,
+  Modelo VARCHAR(45),
+  PRIMARY KEY (Id_aeronave));
 
-
--- -----------------------------------------------------
--- Table `AERONAVE`
--- -----------------------------------------------------
-
-
-CREATE TABLE IF NOT EXISTS `AERONAVE` (
-  `Id_aeronave` INT(10) NOT NULL,
-  `Modelo` VARCHAR(45),
-  PRIMARY KEY (`Id_aeronave`));
-
-
--- -----------------------------------------------------
--- Table `TRECHO`
--- -----------------------------------------------------
-
-CREATE TABLE IF NOT EXISTS `TRECHO` (
-  `Id_trecho` INT NOT NULL,
-  `Classe` VARCHAR(20),
-  `Data_hora` DATETIME,
-  `Codigo_reserva` INT(10) NOT NULL,
-  `VOO_Id_voo` INT(10) NOT NULL,
-  `AERONAVE_Id_aeronave` INT(10) NOT NULL,
-  PRIMARY KEY (`Id_trecho`),
-  INDEX `fk_TRECHO_RESERVA1_idx` (`Codigo_reserva` ASC) VISIBLE,
-  INDEX `fk_TRECHO_VOO1_idx` (`VOO_Id_voo` ASC) VISIBLE,
-  INDEX `fk_TRECHO_AERONAVE1_idx` (`AERONAVE_Id_aeronave` ASC) VISIBLE,
-  CONSTRAINT `fk_TRECHO_RESERVA1`
-    FOREIGN KEY (`Codigo_reserva`)
-    REFERENCES `mydb`.`RESERVA` (`Codigo_reserva`)
+CREATE TABLE IF NOT EXISTS TRECHO (
+  Id_trecho INT NOT NULL,
+  Classe VARCHAR(20),
+  Data_hora DATETIME,
+  Codigo_reserva INT,
+  VOO_Id_voo INT,
+  AERONAVE_Id_aeronave INT,
+  PRIMARY KEY (Id_trecho),
+  INDEX fk_TRECHO_RESERVA1_idx (Codigo_reserva ASC) VISIBLE,
+  INDEX fk_TRECHO_VOO1_idx (VOO_Id_voo ASC) VISIBLE,
+  INDEX fk_TRECHO_AERONAVE1_idx (AERONAVE_Id_aeronave ASC) VISIBLE,
+  CONSTRAINT fk_TRECHO_RESERVA1
+    FOREIGN KEY (Codigo_reserva)
+    REFERENCES RESERVA (Codigo_reserva)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_TRECHO_VOO1`
-    FOREIGN KEY (`VOO_Id_voo`)
-    REFERENCES `mydb`.`VOO` (`Id_voo`)
+  CONSTRAINT fk_TRECHO_VOO1
+    FOREIGN KEY (VOO_Id_voo)
+    REFERENCES VOO (Id_voo)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_TRECHO_AERONAVE1`
-    FOREIGN KEY (`AERONAVE_Id_aeronave`)
-    REFERENCES `mydb`.`AERONAVE` (`Id_aeronave`)
+  CONSTRAINT fk_TRECHO_AERONAVE1
+    FOREIGN KEY (AERONAVE_Id_aeronave)
+    REFERENCES AERONAVE (Id_aeronave)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION);
+    
+    ------------------------------------------------------------------------------------
+    -- Fazendo os insets nas tabelas
+    ------------------------------------------------------------------------------------
+    
+    INSERT INTO CLIENTE(CPF, RG, NOME, DATA_NASCIMENTO, EMAIL, CIDADE_RESIDENCIA, UF) VALUES
+    (12345678912, 862459789, 'Pedro Schabaraum', '2003-09-29', 'pedronhogameplay@gmail.com', 'São Carlos', 'SC'),
+    (32165498713, 456123987, 'Patrick Lemes', '2004-12-10', 'patrickzinho@hotmail.com', 'Chapecó', 'SC'),
+    (74125896379, 794613825, 'Orivalndo', '1945-10-17', 'orivaldoluz@outlook.com', 'Caíbi', 'SC'),
+    (24136198505, 123456789, 'Ygor Kappaun', '2004-06-17', 'ygorzindugrau@hotmail.com', 'Saudades', 'SC');
+    
+    INSERT INTO VOO(ID_VOO, ORiGEM, DESTINO) VALUES
+    (001, 'Chapecó', 'São paulo'),
+    (002, 'Chapecó', 'Rio De Janeiro'),
+    (003, 'Bahia', 'Chapecó'),
+    (004, 'Argentina', 'Chapecó');
+    
+    INSERT INTO AERONAVE(ID_AERONAVE, MODELO) VALUES
+    (001, 'MGSYR472'),
+    (002, 'LSURHA572'),
+    (003, 'JFHRP100'),
+    (004, 'AAAAA123');
+    
+    INSERT INTO PAGAMENTO(ID_PAGAMENTO, METODO, PARCELAS, VALOR) VALUES
+    (001, 'PIX', 1, 2500),
+    (002, 'Cartão', 3, 3000),
+    (003, 'Cartão', 12, 12000),
+    (004, 'PIX', 1, 4000);
+    
+    INSERT INTO RESERVA(CODIGO_RESERVA, STATUS, DATA_EXPIRACAO, CLIENTE_CPF, ID_PAGAMENTO) VALUES
+    (001, 'PAGA', '2024-07-22', 12345678912, 002),
+    (002, 'PAGA', '2024-07-04', 24136198505, 004),
+    (003, 'PAGA', '2024-06-29', 74125896379, 001),
+    (004, 'PAGA', '2024-06-10', 32165498713, 003);
+    
+    INSERT INTO TRECHO(ID_TRECHO, CLASSE, DATA_HORA, CODIGO_RESERVA, VOO_ID_VOO, AERONAVE_ID_AERONAVE) VALUES
+    (001, 'Primeira', '2024-07-24 09:00:00', 003, 001, 004),
+    (002, 'Segunda', '2024-07-20 10:35:45', 001, 002, 001),
+    (003, 'Primeira', '2024-06-10 12:30:00', 004, 004, 003),
+    (004, 'Primeira', '2024-07-01 03:40:00', 002, 003, 002);
+    
