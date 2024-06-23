@@ -102,14 +102,16 @@ CREATE TABLE IF NOT EXISTS TRECHO (
     INSERT INTO PAGAMENTO(ID_PAGAMENTO, METODO, PARCELAS, VALOR) VALUES
     (001, 'PIX', 1, 2500),
     (002, 'Cartão', 3, 3000),
-    (003, 'Cartão', 12, 12000),
-    (004, 'PIX', 1, 4000);
+    (003, 'Cartão', 6, 12000),
+    (004, 'PIX', 1, 4000),
+    (005, 'Cartão', 2, 1750);
     
     INSERT INTO RESERVA(CODIGO_RESERVA, STATUS, DATA_EXPIRACAO, CLIENTE_CPF, ID_PAGAMENTO) VALUES
     (001, 'PAGA', '2024-07-22', 12345678912, 002),
     (002, 'PAGA', '2024-07-04', 24136198505, 004),
     (003, 'PAGA', '2024-06-29', 74125896379, 001),
-    (004, 'PAGA', '2024-06-10', 32165498713, 003);
+    (004, 'PAGA', '2024-06-10', 32165498713, 003),
+    (005, 'PENDENTE', '2024-06-01', 24136198505, 005);
     
     INSERT INTO TRECHO(ID_TRECHO, CLASSE, DATA_HORA, CODIGO_RESERVA, VOO_ID_VOO, AERONAVE_ID_AERONAVE) VALUES
     (001, 'Primeira', '2024-07-24 09:00:00', 003, 001, 004),
@@ -117,3 +119,6 @@ CREATE TABLE IF NOT EXISTS TRECHO (
     (003, 'Primeira', '2024-06-10 12:30:00', 004, 004, 003),
     (004, 'Primeira', '2024-07-01 03:40:00', 002, 003, 002);
     
+     -- -----------------------------------------------------
+     -- Selects
+      -- ----------------------------------------------------
