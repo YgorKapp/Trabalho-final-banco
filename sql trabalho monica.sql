@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS RESERVA (
   Data_expiracao DATE,
   CLIENTE_CPF VARCHAR(11) NOT NULL,
   Id_pagamento INT NOT NULL,
+  DATA_RESERVA DATE,
   PRIMARY KEY (Codigo_reserva),
   INDEX fk_RESERVA_CLIENTE_idx (CLIENTE_CPF ASC) VISIBLE,
   INDEX fk_RESERVA_PAGAMENTO1_idx (Id_pagamento ASC) VISIBLE,
@@ -112,12 +113,12 @@ CREATE TABLE IF NOT EXISTS TRECHO (
     (004, 'PIX', 1, 4000, 'ELO', '2024-06-24'),
     (005, 'Cartão', 2, 1750);
     
-    INSERT INTO RESERVA(CODIGO_RESERVA, STATUS, DATA_EXPIRACAO, CLIENTE_CPF, ID_PAGAMENTO) VALUES
-    (001, 'PAGA', '2024-07-22', 12345678912, 002),
-    (002, 'PAGA', '2024-07-04', 24136198505, 004),
-    (003, 'PAGA', '2024-06-29', 74125896379, 001),
-    (004, 'PAGA', '2024-06-10', 32165498713, 003),
-    (005, 'PENDENTE', '2024-06-01', 24136198505, 005);
+    INSERT INTO RESERVA(CODIGO_RESERVA, STATUS, DATA_EXPIRACAO, CLIENTE_CPF, ID_PAGAMENTO, DATA_RESERVA) VALUES
+    (001, 'PAGA', '2024-07-22', 12345678912, 002, '2024-06-22'),
+    (002, 'PAGA', '2024-07-04', 24136198505, 004, '2024-06-01'),
+    (003, 'PAGA', '2024-06-29', 74125896379, 001, '2024-05-05'),
+    (004, 'PAGA', '2024-06-10', 32165498713, 003, '2024-06-25'),
+    (005, 'PENDENTE', '2024-06-01', 24136198505, 005, '2024-06-28');
     
     INSERT INTO TRECHO(ID_TRECHO, CLASSE, DATA_HORA, CODIGO_RESERVA, VOO_ID_VOO, AERONAVE_ID_AERONAVE) VALUES
     (001, 'Primeira', '2024-07-24 09:00:00', 003, 001, 004),
@@ -127,10 +128,12 @@ CREATE TABLE IF NOT EXISTS TRECHO (
     
      -- -----------------------------------------------------
      -- Selects
-      -- ----------------------------------------------------
+	 -- ----------------------------------------------------
       
       -- 1
-      -- Da uma olhada no que pede nesse select Pedro, se pá precisa musar a tabela
+      SELECT T.DATA_HORA, T.CLASSE, V.ORIGEM, V.DESTINO FROM TRECHO T, VOO V
+      WHERE t.VOO_Id_voo = v.Id_voo
+      AND t.Data_hora BETWEEN '2024-06-01' AND '2024-07-01'
       
       -- 2
        SELECT A.* FROM VOO A, RESERVA B, CLIENTE C, TRECHO D
@@ -140,7 +143,11 @@ CREATE TABLE IF NOT EXISTS TRECHO (
        AND NOME LIKE 'YGOR%';
        
        -- 3
-       -- Da uma olhada nesse tbm pedro '-'
+       SELECT B.NOME, B.EMAIL, C.ORIGEM, C.DESTINO FROM RESERVA A, CLIENTE B, VOO C, TRECHO D
+       WHERE A.CLIENTE_CPF = B.CPF
+       AND D.VOO_ID_VOO = C.ID_VOO
+       AND D.CODIGO_RESERVA = A.CODIGO_RESERVA
+       AND DATA_RESERVA = CURDATE()
        
        -- 4
        SELECT SUM(VALOR) AS SOMA_DOS_PAGAMENTO FROM PAGAMENTO
@@ -148,49 +155,81 @@ CREATE TABLE IF NOT EXISTS TRECHO (
        AND DATA_PAGAMENTO LIKE '2024-07%';
        
        -- 5
-       -- Bah Pedrão, se puder dar uma olhada nisso aqui tbm '-', teria que criar uma tabela tbm pra
-       -- botar os registros excluidos, ex
-       CREATE TABLE reservas_nao_efetivadas (
-		id_reserva INT PRIMARY KEY,
-		venda_concluida BOOLEAN
-		);
+       CREATE TABLE IF NOT EXISTS reservas_nao_efetivadas (
+       id_reserva INT PRIMARY KEY,
+       status VARCHAR(45),
+       data_expiracao DATE,
+       cliente_cpf VARCHAR(11),
+       id_pagamento INT
+       );
+       
+       DELIMITER //
+		CREATE PROCEDURE mover_reservas_nao_efetivadas()
+		BEGIN
+
+			INSERT INTO reservas_nao_efetivadas (id_reserva, status, data_expiracao, cliente_cpf, id_pagamento)
+			SELECT Codigo_reserva, Status, Data_expiracao, CLIENTE_CPF, Id_pagamento
+			FROM RESERVA
+			WHERE Status != 'PAGA';
+    
+			DELETE FROM RESERVA
+			WHERE Status != 'PAGA';
+		END //
+		DELIMITER ;
+    
+		CALL mover_reservas_nao_efetivadas();
         
         -- 6
-		-- Da uma olhada nesse tbm pedão pra ver o que se acha
+		DELIMITER //
+		CREATE FUNCTION calcular_idade(p_cpf VARCHAR(11))
+		RETURNS INT
+		DETERMINISTIC
+		BEGIN
+		DECLARE idade INT;
+    
+		SELECT TIMESTAMPDIFF(YEAR, Data_nascimento, CURDATE()) INTO idade
+		FROM CLIENTE
+		WHERE CPF = p_cpf;
+
+		RETURN idade;
+		END //
+		DELIMITER ;
+
+		SELECT calcular_idade('12345678912') AS idade;
         
         -- 7
         SELECT * FROM CLIENTE
-        WHERE DATA_NASCIMENTO LIKE '%06-17%'
+        WHERE DATA_NASCIMENTO LIKE '%06-17%';
         
         -- 8
-        -- Zoia esse tbm ;-;
+        SELECT t1.Id_trecho, t1.Classe, t1.Data_hora, t1.Codigo_reserva, t1.VOO_Id_voo, t1.AERONAVE_Id_aeronave FROM TRECHO t1
+		JOIN TRECHO t2 ON t1.Codigo_reserva = t2.Codigo_reserva
+        WHERE t1.VOO_Id_voo = 1
+        AND t2.VOO_Id_voo = 2;
         
         -- 9
         SELECT A.NOME, A.EMAIL FROM CLIENTE A, TRECHO B, RESERVA C
         WHERE B.CODIGO_RESERVA = C.CODIGO_RESERVA
         AND C.CLIENTE_CPF = A.CPF
-        AND B.DATA_HORA LIKE '2023%'
+        AND B.DATA_HORA LIKE '2023%';
         
         -- 10
-        -- Criando a função:
 		DELIMITER //
+		CREATE FUNCTION contar_reservas(p_cpf VARCHAR(11), p_data_inicio DATE, p_data_fim DATE)
+		RETURNS INT
+		DETERMINISTIC
+		BEGIN
+			DECLARE total_reservas INT;
 
-CREATE FUNCTION contar_reservas(p_cpf VARCHAR(11), p_data_inicio DATE, p_data_fim DATE)
-RETURNS INT
-DETERMINISTIC
-BEGIN
-    DECLARE total_reservas INT;
+			SELECT COUNT(*) INTO total_reservas
+			FROM RESERVA r
+			INNER JOIN CLIENTE c ON r.CLIENTE_CPF = c.CPF
+			WHERE c.CPF = p_cpf
+			AND r.Data_expiracao BETWEEN p_data_inicio AND p_data_fim;
 
-    SELECT COUNT(*) INTO total_reservas
-    FROM RESERVA r
-    INNER JOIN CLIENTE c ON r.CLIENTE_CPF = c.CPF
-    WHERE c.CPF = p_cpf
-    AND r.Data_expiracao BETWEEN p_data_inicio AND p_data_fim;
+			RETURN total_reservas;
+		END //
+		DELIMITER ;
 
-    RETURN total_reservas;
-END //
-
-DELIMITER ;
-
--- Chamando ela:
-SELECT CONTAR_RESERVAS('12345678901', '2024-01-01', '2024-06-30') AS total_reservas;
+		-- Chamando ela:
+		SELECT CONTAR_RESERVAS('12345678901', '2024-01-01', '2024-06-30') AS total_reservas;
