@@ -38,6 +38,7 @@ while(resposta!=11):
         rows = cursor.fetchall()
         for row in rows:
             print(row)
+    
     # elif resposta == 3:
 
     # elif resposta == 4:
@@ -83,6 +84,31 @@ while(resposta!=11):
         
     # elif resposta == 8:
 
-    # elif resposta == 9:
+    elif resposta == 9:
+        conn = Conexao.create_server_connection()        
 
-    # elif resposta == 10:
+        cursor = conn.cursor()
+        query = f"""SELECT A.NOME, A.EMAIL FROM CLIENTE A, TRECHO B, RESERVA C WHERE B.CODIGO_RESERVA = C.CODIGO_RESERVA AND C.CLIENTE_CPF = A.CPF AND YEAR(B.DATA_HORA) = YEAR(NOW())-1"""
+        cursor.execute(query)
+        
+        rows = cursor.fetchall()
+        print(rows)
+        for row in rows:
+            print(f"Total de reservas: {row[0]}")
+
+
+
+    elif resposta == 10:
+        cpf = input("Digite o CPF do cliente desejado: ")      
+        dtini = input("Informe a data inicial no formato YYYY-MM-DD: ")
+        dtfim = input("Informe a data final no formato YYYY-MM-DD: ")
+        conn = Conexao.create_server_connection()        
+
+        cursor = conn.cursor()
+        query = f"""SELECT CONTAR_RESERVAS('{cpf}', '{dtini}', '{dtfim}') AS total_reservas"""
+        cursor.execute(query)
+        
+        rows = cursor.fetchall()
+        for row in rows:
+                print(f"Total de reservas: {row[0]}")
+
