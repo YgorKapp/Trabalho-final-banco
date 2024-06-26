@@ -102,8 +102,23 @@ while(resposta!=11):
         for row in rows:
             print(row)
         
-    # elif resposta == 8:
+    elif resposta == 8:
+        voost = int(input("Insira o primeiro voo desejado: "))
+        voond = int(input("Insira o segundo voo desejado: "))
+        conn = Conexao.create_server_connection()        
 
+        cursor = conn.cursor()
+        query = f"""SELECT t1.Id_trecho, t1.Classe, t1.Data_hora, t1.Codigo_reserva, t1.VOO_Id_voo, t1.AERONAVE_Id_aeronave FROM TRECHO t1
+		JOIN TRECHO t2 ON t1.Codigo_reserva = t2.Codigo_reserva
+        WHERE t1.VOO_Id_voo = %s
+        AND t2.VOO_Id_voo = %s;"""
+        cursor.execute(query, (voost, voond))
+        
+        rows = cursor.fetchall()
+        print("Resultado: ")
+        for row in rows:
+            print(row)
+            
     elif resposta == 9:
         conn = Conexao.create_server_connection()        
 
