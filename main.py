@@ -23,11 +23,21 @@ while(resposta!=11):
 
     if resposta == 1:
         voo = int(input("Insira o voo desejado: "))
-        # dataInicio = input("In)
+        dataInicio = input("Insira a data de início da pesquisa: ")
+        dataFim = input("Insira a data de fim da pesquisa: ")
+        
+        conn = Conexao.create_server_connection()        
+
+        cursor = conn.cursor()
+        query = f"""SELECT T.DATA_HORA, T.CLASSE, V.ORIGEM, V.DESTINO FROM TRECHO T, VOO V WHERE %s in (t.VOO_Id_voo, v.Id_voo) AND t.Data_hora BETWEEN %s AND %s;"""
+        cursor.execute(query, (voo, dataInicio, dataFim))
+        
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
 
     elif resposta == 2:
         nome = input("Digite o nome do cliente desejado: ")
-
         
         conn = Conexao.create_server_connection()        
 
@@ -41,24 +51,23 @@ while(resposta!=11):
     
     # elif resposta == 3:
 
-    # elif resposta == 4:
-    #     operadora = input("Digite o nome da operadora desejado: ")
-    #     dataPagamento = input("Insira a data de pagamento: ")
+    elif resposta == 4:
+        operadora = input("Digite o nome da operadora desejado: ")
 
-    #     conn = Conexao.create_server_connection()        
+        conn = Conexao.create_server_connection()        
 
-    #     cursor = conn.cursor()
-    #     query = f"""SELECT SUM(VALOR) AS SOMA_DOS_PAGAMENTO FROM PAGAMENTO WHERE OPERADORA_CARTAO = %s AND DATA_PAGAMENTO LIKE %s"""
-    #     cursor.execute(query, (operadora, dataPagamento))
+        cursor = conn.cursor()
+        query = f"""SELECT SUM(VALOR) AS SOMA_DOS_PAGAMENTO FROM PAGAMENTO WHERE OPERADORA_CARTAO = %s AND Data_pagamento BETWEEN DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND CURDATE()"""
+        cursor.execute(query, (operadora,))
         
-    #     rows = cursor.fetchall()
+        rows = cursor.fetchall()
 
-    #     if rows[0]:
-    #         print(rows)
-    #         soma_pagamento = float(rows[0][0])
-    #         print(f"Soma dos pagamentos para {operadora} na data {dataPagamento}: {soma_pagamento}")
-    #     else:
-    #         print(f"Nenhum resultado encontrado para {operadora} na data {dataPagamento}")
+        if rows:
+            soma_pagamento = [float(tupla[0]) for tupla in rows][0]
+            print(f"Soma dos pagamentos para {operadora} no último mês: {soma_pagamento}")
+        else:
+            print(f"Nenhum resultado encontrado para {operadora} no último mês")
+
     # elif resposta == 5:
 
     # elif resposta == 6:
@@ -95,8 +104,6 @@ while(resposta!=11):
         print(rows)
         for row in rows:
             print(f"Total de reservas: {row[0]}")
-
-
 
     elif resposta == 10:
         cpf = input("Digite o CPF do cliente desejado: ")      
