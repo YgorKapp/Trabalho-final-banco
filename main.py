@@ -49,8 +49,19 @@ while(resposta!=11):
         for row in rows:
             print(row)
     
-    # elif resposta == 3:
+    elif resposta == 3:
+        data = input("Insira uma data para consulta: ")
 
+        conn = Conexao.create_server_connection()   
+
+        cursor = conn.cursor()
+        query = f"""SELECT B.NOME, B.EMAIL, C.ORIGEM, C.DESTINO FROM RESERVA A, CLIENTE B, VOO C, TRECHO D WHERE A.CLIENTE_CPF = B.CPF AND D.VOO_ID_VOO = C.ID_VOO AND D.CODIGO_RESERVA = A.CODIGO_RESERVA AND DATA_RESERVA = %s;"""
+        cursor.execute(query, (data,))
+        
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+            
     elif resposta == 4:
         operadora = input("Digite o nome da operadora desejado: ")
 
