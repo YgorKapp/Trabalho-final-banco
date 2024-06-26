@@ -42,7 +42,7 @@ while(resposta!=11):
         conn = Conexao.create_server_connection()        
 
         cursor = conn.cursor()
-        query = f"""SELECT A.* FROM VOO A, RESERVA B, CLIENTE C, TRECHO D WHERE A.ID_VOO = D.VOO_ID_VOO AND D.CODIGO_RESERVA = B.CODIGO_RESERVA AND B.CLIENTE_CPF = C.CPF AND NOME LIKE %s;"""
+        query = f"""SELECT A.*  FROM VOO A JOIN TRECHO D ON A.ID_VOO = D.VOO_ID_VOO JOIN RESERVA B ON D.CODIGO_RESERVA = B.CODIGO_RESERVA JOIN CLIENTE C ON B.CLIENTE_CPF = C.CPF WHERE LOWER(C.NOME) LIKE LOWER(%s);"""
         cursor.execute(query, (nome,))
         
         rows = cursor.fetchall()
@@ -61,7 +61,7 @@ while(resposta!=11):
         rows = cursor.fetchall()
         for row in rows:
             print(row)
-            
+
     elif resposta == 4:
         operadora = input("Digite o nome da operadora desejado: ")
 
@@ -80,8 +80,30 @@ while(resposta!=11):
             print(f"Nenhum resultado encontrado para {operadora} no último mês")
 
     # elif resposta == 5:
+    #     conn = Conexao.create_server_connection()        
 
-    # elif resposta == 6:
+    #     cursor = conn.cursor()
+    #     query = f"""SELECT mover_reservas_nao_efetivadas()"""
+    #     cursor.execute(query,)
+        
+    #     rows = cursor.fetchall()
+
+    #     for row in rows:
+    #         print(row)
+        
+    elif resposta == 6:
+        idade = input("Insira o cpf do cliente: ")
+        conn = Conexao.create_server_connection()        
+
+        cursor = conn.cursor()
+        query = f"""SELECT calcular_idade(%s) AS idade"""
+        cursor.execute(query, (idade,))
+        
+        rows = cursor.fetchall()
+
+        for row in rows:
+            print(row)
+
 
     elif resposta == 7:
         print("Verificar aniversariantes")
@@ -118,7 +140,7 @@ while(resposta!=11):
         print("Resultado: ")
         for row in rows:
             print(row)
-            
+
     elif resposta == 9:
         conn = Conexao.create_server_connection()        
 
